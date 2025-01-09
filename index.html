@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 20px;
+        display: flex;
+      }
+
+      tr {
+        display: grid;
+      }
+
+      th {
+        background-color: #4CAF50;
+        color: white;
+        padding: 12px;
+        text-align: left;
+        border: 1px solid #ddd;
+      }
+
+      td {
+        padding: 12px;
+        text-align: left;
+        border: 1px solid #ddd;
+      }
+
+      tr:hover {
+        background-color: #f1f1f1;
+      }
+
+      select {
+        margin-bottom: 15px;
+        padding: 8px;
+        font-size: 16px;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Google Sheet Data</h1>
+    
+    <!-- Dropdown for selecting name -->
+    <label for="nameDropdown">Select Name:</label>
+    <select id="nameDropdown">
+      <option value="">Select Name</option>
+    </select>
+
+    <!-- Table to display data -->
+    <table>
+      <thead>
+        <tr>
+          <th>Form Types</th>
+          <th>Date</th>
+          <th>Name</th>
+          <th>Phone Number</th>
+          <th>E-mail</th>
+          <th>Message</th>
+        </tr>
+      </thead>
+      <tbody id="data"></tbody>
+    </table>
+      
+
+    <div style="padding: 2rem;">
+        <button id="sendDataBtn">Send Data To Google Sheet</button>
+        <button id="GeneratePdf">Generate PDF</button>    
+    </div>
+    <script src="app.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script async defer src="https://apis.google.com/js/api.js"></script>
+    <script src="sendData.js"></script>
+
+   
+  </body>
+</html>

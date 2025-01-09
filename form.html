@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Send Data to Google Sheets via Google Form</title>
+</head>
+<body>
+  <table>
+    <thead>
+      <tr>
+        <th>Form Types</th>
+        <th>Date</th>
+        <th>Name</th>
+        <th>Phone Number</th>
+        <th>E-mail</th>
+        <th>Message</th>
+      </tr>
+    </thead>
+    <tbody id="data">
+      <!-- Sample Data -->
+      <tr>
+        <td>Sample Form Type</td>
+        <td>2025-01-08</td>
+        <td>John Doe</td>
+        <td>1234567890</td>
+        <td>johndoe@example.com</td>
+        <td>Test Message</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <button id="sendDataBtn">Send Data To Google Sheet</button>
+
+ 
+  <script src="sendData.js"></script>
+</body>
+</html>
