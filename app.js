@@ -211,21 +211,17 @@ function generatePDF() {
   // Save the generated PDF
   doc.save(pdfName);
 
-  // Send email to the owner
-  emailjs.init("PY4UYESCPEYEUR26OZZG4P2JLBETAGRHHZAQQPLIKF3F24SFFBEAOQ3ZLQGXMW22"); // Initialize EmailJS with your user ID
-
-  const emailParams = {
-    to_email: "priyadiw128@gmail.com", // Owner's email address
-    subject: `Report Generated: ${pdfName}`,
-    message: `The report for ${selectedName} has been successfully generated. Please find the attached PDF.`,
-  };
+  console.log("Sending email with parameters:", emailParams); // Log the parameters before sending
 
   emailjs.send("service_uxa4c9n", "template_6w7lhal", emailParams)
     .then((response) => {
-      console.log("Email sent successfully:", response);
+      console.log("Email sent successfully:", response); // Log the successful response
     })
     .catch((error) => {
-      console.error("Error sending email:", error);
+      console.error("Error sending email:", error); // Log the error and response object
+      if (error && error.text) {
+        console.error("EmailJS error response:", error.text); // Log the actual error message from EmailJS
+      }
     });
 }
 
