@@ -52,7 +52,7 @@
     </select>
 
     <!-- Table to display data -->
-    <table>
+    <table id="table">
       <thead>
         <tr>
           <th>Form Types</th>
@@ -61,6 +61,7 @@
           <th>Phone Number</th>
           <th>E-mail</th>
           <th>Message</th>
+          <th>Business Details</th>
         </tr>
       </thead>
       <tbody id="data"></tbody>
@@ -69,12 +70,16 @@
 
     <div style="padding: 2rem;">
         <button id="sendDataBtn">Send Data To Google Sheet</button>
-        <button id="GeneratePdf">Generate PDF</button>    
+        <button id="GeneratePdf">Generate PDF</button>  
+        <button id="PrintData">Print Data</button>    
     </div>
     <script src="app.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.19/jspdf.plugin.autotable.min.js"></script>
+
     <script async defer src="https://apis.google.com/js/api.js"></script>
     <script src="sendData.js"></script>
+    <script type="text/javascript" src="https://cdn.emailjs.com/dist/email.min.js"></script>
 
    
   </body>

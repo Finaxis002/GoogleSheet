@@ -30,6 +30,9 @@ async function getData() {
 function populateDropdown(data) {
   const dropdown = document.getElementById("nameDropdown");
 
+  // Clear the existing options
+  dropdown.innerHTML = "";
+
   // Get unique names from the data
   const names = [...new Set(data.slice(1).map((row) => row[2]))]; // Assuming name is in the 3rd column
 
@@ -53,50 +56,64 @@ function populateDropdown(data) {
   }
 }
 
+
 // Display the table data
 function displayData(data) {
   const tableBody = document.getElementById("data");
   tableBody.innerHTML = ""; // Clear previous data
 
-  data.slice(1).forEach((row) => {
-    // Skip the first row (header)
+  data.slice(1).forEach((row, rowIndex) => {
     const tr = document.createElement("tr");
 
-    // Create individual cells (td) and append them to the row
     const td1 = document.createElement("td");
     td1.textContent = row[0]; // Form Types (first column)
-    td1.setAttribute("contenteditable", "true"); // Make the cell editable
+    td1.setAttribute("contenteditable", "true");
     tr.appendChild(td1);
 
     const td2 = document.createElement("td");
     td2.textContent = row[1]; // Date (second column)
-    td2.setAttribute("contenteditable", "true"); // Make the cell editable
+    td2.setAttribute("contenteditable", "true");
     tr.appendChild(td2);
 
     const td3 = document.createElement("td");
     td3.textContent = row[2]; // Name (third column)
-    td3.setAttribute("contenteditable", "true"); // Make the cell editable
+    td3.setAttribute("contenteditable", "true");
+    td3.addEventListener("blur", () => updateDropdownName(rowIndex, td3.textContent, data)); // Update dropdown on edit
     tr.appendChild(td3);
 
     const td4 = document.createElement("td");
     td4.textContent = row[3]; // Phone Number (fourth column)
-    td4.setAttribute("contenteditable", "true"); // Make the cell editable
+    td4.setAttribute("contenteditable", "true");
     tr.appendChild(td4);
 
     const td5 = document.createElement("td");
     td5.textContent = row[4]; // E-mail (fifth column)
-    td5.setAttribute("contenteditable", "true"); // Make the cell editable
+    td5.setAttribute("contenteditable", "true");
     tr.appendChild(td5);
 
     const td6 = document.createElement("td");
     td6.textContent = row[5]; // Message (sixth column)
-    td6.setAttribute("contenteditable", "true"); // Make the cell editable
+    td6.setAttribute("contenteditable", "true");
     tr.appendChild(td6);
 
-    // Append the row to the table body
+    const td7 = document.createElement("td");
+    td7.textContent = row[6]; // Business Details (seventh column)
+    td7.setAttribute("contenteditable", "true");
+    tr.appendChild(td7);
+
     tableBody.appendChild(tr);
   });
 }
+
+function updateDropdownName(rowIndex, newName, data) {
+  // Update the name in the data array
+  data[rowIndex + 1][2] = newName; // Assuming name is in the third column
+
+  // Now update the dropdown to reflect the change
+  populateDropdown(data);
+}
+
+
 
 
 // Filter data based on the selected name
@@ -110,14 +127,11 @@ function filterData(event) {
     const filteredData = jsonData
       .slice(1)
       .filter((row) => row[2] === selectedName);
-    displayData([jsonData[0], ...filteredData]); // Include the header row with filtered data
+     displayData([jsonData[0], ...filteredData]); // Include the header row with filtered data
   }
 }
 
 
-
-
-// Function to generate the PDF when the "Generate PDF" button is clicked
 function generatePDF() {
   const selectedName = document.getElementById("nameDropdown").value;
 
@@ -126,7 +140,16 @@ function generatePDF() {
     return;
   }
 
-  const selectedData = jsonData.slice(1).find((row) => row[2] === selectedName); // Assuming name is in the 3rd column
+  // Find the row corresponding to the selected name
+  const tableRows = document.querySelectorAll("#data tr");
+  let selectedData = null;
+
+  tableRows.forEach((row) => {
+    const nameCell = row.cells[2]; // Name is in the 3rd column (index 2)
+    if (nameCell.textContent.trim() === selectedName.trim()) {
+      selectedData = Array.from(row.cells).map((cell) => cell.textContent.trim());
+    }
+  });
 
   if (!selectedData) {
     alert("No data found for the selected name.");
@@ -136,23 +159,61 @@ function generatePDF() {
   const { jsPDF } = window.jspdf;
   const doc = new jsPDF();
 
-  // Add title to PDF
-  doc.setFontSize(18);
-  doc.text(`Data for ${selectedName}`, 10, 10);
+  // Table style and layout
+  const startX = 10;
+  const startY = 20;
+  const cellWidth = 50;
+  const cellHeight = 10;
 
-  // Add data to PDF
-  doc.setFontSize(12);
-  doc.text(`Form Type: ${selectedData[0]}`, 10, 20);
-  doc.text(`Date: ${selectedData[1]}`, 10, 30);
-  doc.text(`Name: ${selectedData[2]}`, 10, 40);
-  doc.text(`Phone Number: ${selectedData[3]}`, 10, 50);
-  doc.text(`E-mail: ${selectedData[4]}`, 10, 60);
-  doc.text(`Message: ${selectedData[5]}`, 10, 70);
+  // Data structure to render
+  const data = [
+    ["Form Types", selectedData[0]],
+    ["Date", selectedData[1]],
+    ["Name", selectedData[2]],
+    ["Phone Number", selectedData[3]],
+    ["E-mail", selectedData[4]],
+    ["Message", selectedData[5]],
+    ["Business Details", selectedData[6]],
+  ];
+
+  // Draw table
+  data.forEach((row, index) => {
+    const y = startY + index * cellHeight;
+
+    // Draw background for labels
+    doc.setFillColor(76, 175, 80); // Green background
+    doc.rect(startX, y, cellWidth, cellHeight, "F");
+
+    // Draw background for values
+    doc.setFillColor(255, 255, 255); // White background
+    doc.rect(startX + cellWidth, y, cellWidth * 2, cellHeight, "F");
+
+    // Add borders for labels
+    doc.setDrawColor(221, 221, 221);
+    doc.setLineWidth(0.042); // Border thickness: 3px
+    doc.rect(startX, y, cellWidth, cellHeight, "S");
+
+    // Add borders for values
+    doc.rect(startX + cellWidth, y, cellWidth * 2, cellHeight, "S");
+
+    // Add text
+    doc.setFontSize(10);
+    doc.setTextColor(255, 255, 255); // White text for labels
+    doc.text(row[0], startX + 5, y + 7);
+
+    doc.setTextColor(0, 0, 0); // Black text for values
+    doc.text(row[1], startX + cellWidth + 5, y + 7);
+  });
 
   // Save the generated PDF
-  doc.save(`${selectedName}_data.pdf`);
+  const pdfName = `${selectedName}_data.pdf`;
+  doc.save(pdfName);
+
+  // Send email notification
+  sendEmail(selectedName);
 }
 
+// Add event listener for Generate PDF button
 document.getElementById("GeneratePdf").addEventListener("click", generatePDF);
 
 
