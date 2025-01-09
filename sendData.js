@@ -7,7 +7,7 @@ document.getElementById("sendDataBtn").addEventListener("click", function () {
     if (columns.length > 8) return; // Skip rows with fewer than 7 cells
 
     let rowData = {
-      formType: columns[0]?.innerText || "", // Use optional chaining and fallback to empty string
+    formType: columns[0]?.innerText || "", // Use optional chaining and fallback to empty string
     date: columns[1]?.innerText || "",
     name: columns[2]?.innerText || "",
     phone: columns[3]?.innerText || "",
@@ -53,20 +53,18 @@ document.getElementById("sendDataBtn").addEventListener("click", function () {
 
 
 
-document.getElementById("PrintData").addEventListener("click", function() {
-  const formUrl = "https://script.google.com/macros/s/AKfycbzDyonSC6KJwS3HmBaoXhcv4pGbAw5HvJd_lUCZb0aPUwKYEt9CQdpgbjKQ-Gk7U4dD/exec"; // Replace with your Google Apps Script Web App URL
-
-  // Send POST request to trigger Apps Script
-  fetch(formUrl, {
-    method: "POST", // Trigger the Apps Script function
+document.getElementById('PrintData').addEventListener('click', function() {
+  fetch('https://script.google.com/macros/s/AKfycby5ixLgShz0LsQgZ9RWwkagIctXc8m6QBJyiSemdLUrbR9Dq5UnQii3OsKYwU6-sOg9/exec', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
   })
-  .then(response => response.text())  // Get the response text
+  .then(response => response.json())
   .then(data => {
-    alert("Most recent data transferred successfully to Sheet2!");
-    console.log(data);  // Log the server response
+    console.log('Data copied successfully');
   })
-  .catch((error) => {
-    console.error("Error:", error);
-    alert("Failed to transfer data. Please try again.");
+  .catch(error => {
+    console.error('Error:', error);
   });
 });

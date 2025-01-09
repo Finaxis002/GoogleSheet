@@ -159,11 +159,13 @@ function generatePDF() {
   const { jsPDF } = window.jspdf;
   const doc = new jsPDF();
 
+  // Table style and layout
   const startX = 10;
   const startY = 20;
   const cellWidth = 50;
   const cellHeight = 10;
 
+  // Data structure to render
   const data = [
     ["Form Types", selectedData[0]],
     ["Date", selectedData[1]],
@@ -174,61 +176,62 @@ function generatePDF() {
     ["Business Details", selectedData[6]],
   ];
 
+  // Draw table
   data.forEach((row, index) => {
     const y = startY + index * cellHeight;
 
-    doc.setFillColor(76, 175, 80);
+    // Draw background for labels
+    doc.setFillColor(76, 175, 80); // Green background
     doc.rect(startX, y, cellWidth, cellHeight, "F");
 
-    doc.setFillColor(255, 255, 255);
+    // Draw background for values
+    doc.setFillColor(255, 255, 255); // White background
     doc.rect(startX + cellWidth, y, cellWidth * 2, cellHeight, "F");
 
+    // Add borders for labels
     doc.setDrawColor(221, 221, 221);
-    doc.setLineWidth(0.042);
+    doc.setLineWidth(0.042); // Border thickness: 3px
     doc.rect(startX, y, cellWidth, cellHeight, "S");
+
+    // Add borders for values
     doc.rect(startX + cellWidth, y, cellWidth * 2, cellHeight, "S");
 
+    // Add text
     doc.setFontSize(10);
-    doc.setTextColor(255, 255, 255);
+    doc.setTextColor(255, 255, 255); // White text for labels
     doc.text(row[0], startX + 5, y + 7);
 
-    doc.setTextColor(0, 0, 0);
+    doc.setTextColor(0, 0, 0); // Black text for values
     doc.text(row[1], startX + cellWidth + 5, y + 7);
   });
 
+  // PDF filename
   const pdfName = `${selectedName}_data.pdf`;
+  
+  // Save the generated PDF
   doc.save(pdfName);
 
-  // Send email notification via backend
-  sendEmailNotification(selectedName, pdfName);
-}
+  // Send email to the owner
+  emailjs.init("PY4UYESCPEYEUR26OZZG4P2JLBETAGRHHZAQQPLIKF3F24SFFBEAOQ3ZLQGXMW22"); // Initialize EmailJS with your user ID
 
-// Function to send an email notification via backend
-function sendEmailNotification(name, pdfName) {
-  fetch("https://your-backend-endpoint.com/send-email", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      email: "priyadiw128@gmail.com",
-      message: `Resort has been printed for ${name}`,
-      pdfName: pdfName,
-    }),
-  })
+  const emailParams = {
+    to_email: "priyadiw128@gmail.com", // Owner's email address
+    subject: `Report Generated: ${pdfName}`,
+    message: `The report for ${selectedName} has been successfully generated. Please find the attached PDF.`,
+  };
+
+  emailjs.send("service_uxa4c9n", "template_6w7lhal", emailParams)
     .then((response) => {
-      if (response.ok) {
-        alert("PDF generated and email notification sent.");
-      } else {
-        alert("PDF generated, but failed to send email notification.");
-      }
+      console.log("Email sent successfully:", response);
     })
     .catch((error) => {
-      console.error("Error sending email notification:", error);
-      alert("PDF generated, but failed to send email notification.");
+      console.error("Error sending email:", error);
     });
 }
 
+
+
+// Add event listener for Generate PDF button
 document.getElementById("GeneratePdf").addEventListener("click", generatePDF);
 
 
