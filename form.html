@@ -1,38 +1,131 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Send Data to Google Sheets via Google Form</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Upload PDF to Google Drive</title>
+    <script src="https://apis.google.com/js/api.js"></script>
+    <script src="https://apis.google.com/js/platform.js" async defer></script>
 </head>
 <body>
-  <table>
-    <thead>
-      <tr>
-        <th>Form Types</th>
-        <th>Date</th>
-        <th>Name</th>
-        <th>Phone Number</th>
-        <th>E-mail</th>
-        <th>Message</th>
-      </tr>
-    </thead>
-    <tbody id="data">
-      <!-- Sample Data -->
-      <tr>
-        <td>Sample Form Type</td>
-        <td>2025-01-08</td>
-        <td>John Doe</td>
-        <td>1234567890</td>
-        <td>johndoe@example.com</td>
-        <td>Test Message</td>
-      </tr>
-    </tbody>
-  </table>
+    <button id="PrintData">Generate and Upload PDF</button>
 
-  <button id="sendDataBtn">Send Data To Google Sheet</button>
+    <script>
+        document.getElementById("PrintData").addEventListener("click", async () => {
+            const apiKey = "AIzaSyDS0aWoloQlZj99DOTAZgzXxV8qo1Ax8Kk"; // Replace with your Google Sheets API key
+            const spreadsheetId = "1sBM1jWKaTXbFoR_wg7L3yE2JqRCIv4-xvCRFI-YYOx4"; // Spreadsheet ID
+            const rangeData = "Sheet2!A1:B6"; // Range to fetch the data
+            const rangeName = "Sheet1!B3"; // Range to fetch the name for filename
 
- 
-  <script src="sendData.js"></script>
+            try {
+                // Fetch the value for the name from Sheet1!B4
+                const nameUrl = `https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}/values/${rangeName}?key=${apiKey}`;
+                const nameResponse = await fetch(nameUrl);
+                if (!nameResponse.ok) throw new Error("Failed to fetch name for filename");
+                const nameData = await nameResponse.json();
+                const name = nameData.values ? nameData.values[0][0] : "GoogleSheetData"; // Use value from B4, fallback to default name
+                
+                // Fetch the data from Sheet2
+                const dataUrl = `https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}/values/${rangeData}?key=${apiKey}`;
+                const dataResponse = await fetch(dataUrl);
+                if (!dataResponse.ok) throw new Error("Failed to fetch data from the sheet");
+                const sheetData = await dataResponse.json();
+                const values = sheetData.values;
+
+                // Generate PDF with jsPDF
+                const { jsPDF } = window.jspdf;
+                const doc = new jsPDF();
+
+                const cellWidth = 95; // Width of each cell
+                const cellHeight = 10; // Height of each cell
+                const startX = 10; // Start X position for the table
+                let startY = 20; // Start Y position for the table
+
+                // Add table rows with custom styling
+                values.forEach((row, rowIndex) => {
+                    row.forEach((cell, colIndex) => {
+                        const x = startX + colIndex * cellWidth;
+                        const y = startY;
+
+                        // Set background color and text color
+                        if (colIndex === 0) {
+                            // A column
+                            doc.setFillColor(76, 175, 80); // #4CAF50
+                            doc.setTextColor(255, 255, 255); // White
+                        } else {
+                            // B column
+                            doc.setFillColor(255, 255, 255); // White
+                            doc.setTextColor(0, 0, 0); // Black
+                        }
+
+                        // Draw cell background
+                        doc.rect(x, y, cellWidth, cellHeight, "F");
+
+                        // Draw cell border
+                        doc.setDrawColor(221, 221, 221); // #DDDDDD
+                        doc.setLineWidth(0.3);
+                        doc.rect(x, y, cellWidth, cellHeight, "S");
+
+                        // Add text
+                        doc.text(cell, x + 5, y + 7); // Add padding inside the cell
+                    });
+
+                    startY += cellHeight; // Move to the next row
+                });
+
+                // Create dynamic filename using the value from B4 (e.g., 'AkiritiReport.pdf')
+                const fileName = `${name}Report.pdf`;
+                const pdfBlob = doc.output('blob');
+
+                // Initialize the Google API client
+                gapi.load('client:auth2', async () => {
+                    try {
+                        // Initialize the Google auth2 client
+                        await gapi.auth2.init({
+                            client_id: "1051648383107-iq58pcrsq84hqrltdqpt6l91a7ib8us4.apps.googleusercontent.com", // Replace with your Client ID
+                        });
+
+                        // Sign in to the Google account
+                        const authInstance = gapi.auth2.getAuthInstance();
+                        const user = await authInstance.signIn();
+
+                        // Now upload the file
+                        const fileMetadata = {
+                            name: fileName,
+                            mimeType: 'application/pdf'
+                        };
+
+                        const media = {
+                            mimeType: 'application/pdf',
+                            body: pdfBlob
+                        };
+
+                        const request = gapi.client.drive.files.create({
+                            resource: fileMetadata,
+                            media: media,
+                            fields: 'id'
+                        });
+
+                        request.execute((file) => {
+                            if (file.id) {
+                                alert('File uploaded to Google Drive successfully!');
+                                console.log(`File uploaded with ID: ${file.id}`);
+                            } else {
+                                alert('Failed to upload file');
+                                console.error('Error uploading file');
+                            }
+                        });
+
+                    } catch (error) {
+                        console.error("Error:", error);
+                        alert("An error occurred during the authentication or upload process.");
+                    }
+                });
+            } catch (error) {
+                console.error("Error:", error.message);
+                alert("An error occurred while generating the report. Please try again.");
+            }
+        });
+    </script>
 </body>
 </html>
